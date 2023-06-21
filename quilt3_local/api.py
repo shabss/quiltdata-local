@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 
 import ariadne.asgi
@@ -10,8 +11,8 @@ from .context import QuiltContext
 from .graphql import schema as graphql_schema
 
 logger = logging.getLogger(__name__)
-
-sts_client = boto3.client("sts")
+endpoint_url = os.environ.get("ENDPOINT_URL")
+sts_client = boto3.client("sts", endpoint_url=endpoint_url)
 session_cred = boto3._get_default_session().get_credentials()
 
 if session_cred is None:

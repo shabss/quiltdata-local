@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import os
 
 import aiobotocore.session
 import botocore
@@ -8,7 +9,7 @@ import botocore
 from .async_cache import cached
 
 BOTO_MAX_POOL_CONNECTIONS = 100
-
+endpoint_url = os.environ.get("ENDPOINT_URL")
 get_aio_boto_session = cached()(aiobotocore.session.get_session)
 
 # XXX: do we need to close this stack at some point? await global_context_stack.aclose()
@@ -18,9 +19,13 @@ global_context_stack = contextlib.AsyncExitStack()
 @cached()
 async def get_aio_s3():
     return await global_context_stack.enter_async_context(
-        get_aio_boto_session().create_client("s3", config=botocore.config.Config(
-            max_pool_connections=BOTO_MAX_POOL_CONNECTIONS,
-        )),
+        get_aio_boto_session().create_client(
+            "s3",
+            config=botocore.config.Config(
+                max_pool_connections=BOTO_MAX_POOL_CONNECTIONS,
+            ),
+            endpoint_url=endpoint_url,
+        ),
     )
 
 
